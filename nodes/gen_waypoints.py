@@ -9,7 +9,9 @@ import sys
 import argparse
 import rospy
 import numpy as np
-from geometry_msgs.msg import PoseArray, Pose
+from std_msgs.msg import Header
+from geometry_msgs.msg import PoseArray, Pose, PoseStamped
+from nav_msgs.msg import Path
 from std_msgs.msg import Bool
 import pymap3d
 import json
@@ -34,7 +36,7 @@ class PublishWaypoints():
         else:
             waypoint_topic = '/' + namespace + '/waypoints'
             request_topic = '/' + namespace + '/request_waypoints'
-        self.wpPub_ = rospy.Publisher(waypoint_topic, PoseArray, queue_size=1, latch=True)
+        self.wpPub_ = rospy.Publisher(waypoint_topic, Path, queue_size=1, latch=True)
         rospy.Subscriber(request_topic, Bool, self.reqCallback)
 
         self.geo = geo
@@ -131,15 +133,20 @@ class PublishWaypoints():
             None
 
         """
-        pose_array_msg = PoseArray()
+        path_msg = Path()
+        header = Header()
+        header.stamp = rospy.Time.now()
+        header.frame_id = "map"
+        path_msg.header = header
         pose_list = []
         for n in range(waypoint_array.shape[0]):
-            ps = Pose()
-            ps.position.x = waypoint_array[n, 0]
-            ps.position.y = waypoint_array[n, 1]
+            ps = PoseStamped()
+            ps.header = header
+            ps.pose.position.x = waypoint_array[n, 0]
+            ps.pose.position.y = waypoint_array[n, 1]
             pose_list.append(ps)
-        pose_array_msg.poses = pose_list
-        self.wpPub_.publish(pose_array_msg)
+        path_msg.poses = pose_list
+        self.wpPub_.publish(path_msg)
 
 
 if __name__ == '__main__':
