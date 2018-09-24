@@ -50,9 +50,6 @@ def plot_waypoint_following(args):
         plt.plot(odom_array[:,0], odom_array[:,1], label='Odometry')
     plt.legend()
 
-    print(min(speed_list))
-    print(max(speed_list))
-
     if args.plot_speed:
         plt.figure()
         plt.plot(range(len(speed_list)), speed_list)
